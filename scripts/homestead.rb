@@ -399,5 +399,16 @@ class Homestead
             s.args = [settings["ip"]]
             s.privileged = false
         end
+
+        config.vm.provision "shell" do |s|
+            s.name = "Setting timezone America/Sao_Paulo in PHP: "
+            s.path = "php_timezone.sh"
+        end
+
+        # Install Git
+        config.vm.provision "shell" do |s|
+            s.name = "Install Git: "
+            s.path = scriptDir + "/install-git.sh"
+        end
     end
 end
