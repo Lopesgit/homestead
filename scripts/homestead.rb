@@ -41,6 +41,7 @@ class Homestead
       if settings.has_key?('gui') && settings['gui']
         vb.gui = true
       end
+      vb.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/home_vagrant_rkm", "1"]
     end
 
     # Override Default SSH port on the host
@@ -474,13 +475,58 @@ class Homestead
         s.inline = 'sudo echo 0 >/sys/block/sda/queue/iosched/group_idle'
       end
     end
- 
-    # Install Git
-    config.vm.provision "shell" do |s|
-      s.name = "Install Git: "
-      s.path = script_dir + "/install-git.sh"
+
+    # Install npm especific version
+    if settings.has_key?('php')
+      config.vm.provision 'shell' do |s|
+        s.name = 'Set PHP version ' + settings['php']
+        s.inline = 'update-alternatives --set php /usr/bin/php$1'
+        s.args = [settings['php']]
+      end
     end
-    
+
+    # Install Git
+    if settings.has_key?('git') && settings['git']
+      config.vm.provision "shell" do |s|
+        s.name = "Install Git: "
+        s.path = script_dir + "/install-git.sh"
+      end
+    end
+
+    # Install npm especific version
+    if settings.has_key?('pma') && settings['pma']
+      config.vm.provision 'shell' do |s|
+        s.name = 'Install PhpMyAdmin '
+        s.path = script_dir + '/install-pma.sh'
+      end
+    end
+
+    # Install NVM
+    config.vm.provision "shell" do |s|
+      s.privileged = false
+      s.name = "Install NVM: "
+      s.path = script_dir + "/install-nvm.sh"
+    end
+
+    # Install Node especific version
+    if settings.has_key?('node')
+      config.vm.provision 'shell' do |s|
+        s.name = 'Install Node version ' + settings['node']
+        s.privileged = false
+        s.path = script_dir + '/install-node.sh'
+        s.args = [settings['node']]
+      end
+    end
+
+    # Install npm especific version
+    if settings.has_key?('npm')
+      config.vm.provision 'shell' do |s|
+        s.name = 'Install NPM version ' + settings['npm']
+        s.path = script_dir + '/install-npm.sh'
+        s.args = [settings['npm']]
+      end
+    end
+
     # Update timezone
     config.vm.provision "shell" do |s|
       s.name = "Setting timezone America/Sao_Paulo in PHP: "

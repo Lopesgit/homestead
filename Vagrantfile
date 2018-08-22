@@ -50,4 +50,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         config.hostmanager.manage_host = true
         config.hostmanager.aliases = settings['sites'].map { |site| site['map'] }
     end
+
+    # Proxy
+    if Vagrant.has_plugin?("vagrant-proxyconf")
+        config.proxy.http     = "http://192.168.0.254:3128"
+        config.proxy.https    = "http://192.168.0.254:3128"
+        config.proxy.no_proxy = "localhost,127.0.0.1"
+    end
 end
