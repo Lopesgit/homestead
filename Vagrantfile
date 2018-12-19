@@ -52,9 +52,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
 
     # Proxy
-    if Vagrant.has_plugin?("vagrant-proxyconf")
-        config.proxy.http     = "http://192.168.0.254:3128"
-        config.proxy.https    = "http://192.168.0.254:3128"
-        config.proxy.no_proxy = "localhost,127.0.0.1"
+    # if Vagrant.has_plugin?("vagrant-proxyconf")
+    #     config.proxy.http     = "http://192.168.0.254:3128"
+    #     config.proxy.https    = "http://192.168.0.254:3128"
+    #     config.proxy.no_proxy = "localhost,127.0.0.1"
+    # end
+
+    config.trigger.after :halt do |trigger|
+        trigger.info = "Stopping winnfsd service..."
+        trigger.run = {path: "nfsservice.bat"}
     end
 end

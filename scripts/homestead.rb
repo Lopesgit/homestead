@@ -326,7 +326,7 @@ class Homestead
     config.vm.provision 'shell' do |s|
       s.name = 'Restarting Nginx'
       s.inline = 'sudo service nginx restart; sudo service php5.6-fpm restart; sudo service php7.0-fpm restart; sudo service php7.1-fpm restart; sudo service php7.2-fpm restart; sudo service php7.3-fpm restart;'
-    end
+    end  
 
     # Install CouchDB If Necessary
     if settings.has_key?('couchdb') && settings['couchdb']
@@ -481,7 +481,7 @@ class Homestead
       end
     end
 
-    # Install npm especific version
+    # Install php especific version
     if settings.has_key?('php')
       config.vm.provision 'shell' do |s|
         s.name = 'Set PHP version ' + settings['php']
@@ -498,11 +498,13 @@ class Homestead
       end
     end
 
-    # Install npm especific version
-    if settings.has_key?('pma') && settings['pma']
+    # Install PhpMyAdmin especific version
+    if settings.has_key?('pma')
       config.vm.provision 'shell' do |s|
-        s.name = 'Install PhpMyAdmin '
+        s.privileged = false
+        s.name = 'Install PhpMyAdmin ' + settings['pma']
         s.path = script_dir + '/install-pma.sh'
+        s.args = [settings['pma'], settings['pma_php_version']]
       end
     end
 
@@ -530,6 +532,12 @@ class Homestead
         s.path = script_dir + '/install-npm.sh'
         s.args = [settings['npm']]
       end
+    end
+
+    # Setting collation to MySql
+    config.vm.provision 'shell' do |s|
+      s.name = 'Setting collation to MySql'
+      s.inline = 'sed -i "/O_DIRECT/acharacter-set-server=utf8mb4\ncollation-server=utf8mb4_unicode_ci" /etc/mysql/my.cnf; systemctl restart mysql;'
     end
 
     # Update timezone
