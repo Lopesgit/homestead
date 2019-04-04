@@ -63,8 +63,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     #     config.proxy.no_proxy = "localhost,127.0.0.1"
     # end
 
-    config.trigger.after :halt do |trigger|
-        trigger.info = "Stopping winnfsd service..."
-        trigger.run = {path: "nfsservice.bat"}
-    end
+    # config.trigger.after :halt do |trigger|
+    #     trigger.info = "Stopping winnfsd service..."
+    #     trigger.run = {path: "nfsservice.bat"}
+    # end
 end

@@ -568,6 +568,15 @@ class Homestead
       end
     end
 
+    # Install Zsh
+    if settings.has_key?('zsh') && settings['zsh']
+      config.vm.provision "shell" do |s|
+        s.privileged = false
+        s.name = "Install Zsh: "
+        s.path = script_dir + "/install-zsh.sh"
+      end
+    end
+
     # Install PhpMyAdmin especific version
     if settings.has_key?('pma')
       config.vm.provision 'shell' do |s|
@@ -614,6 +623,16 @@ class Homestead
     config.vm.provision "shell" do |s|
       s.name = "Setting timezone America/Sao_Paulo in PHP: "
       s.path = "php_timezone.sh"
+    end
+
+    if settings.has_key?('fix_node_modules') && settings['fix_node_modules'] && settings.has_key?('nodes_modules') 
+      settings['nodes_modules'].each do | nm |
+        config.vm.provision 'shell', run: "always" do |s|
+          s.name = "Fix \"node_modules\" folder of #{nm['app_name'].capitalize}:"
+          s.privileged = false
+          s.inline = "mkdir -pv /home/vagrant/node_modules_#{nm['app_name']};  mkdir -pv #{nm['path']}; sudo mount -Bv /home/vagrant/node_modules_#{nm['app_name']} #{nm['path']}" 
+        end
+      end
     end
   end
 
