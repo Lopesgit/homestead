@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 declare -A params=$6       # Create an associative array
-declare -A headers=${10}   # Create an associative array
-declare -A rewrites=${11}  # Create an associative array
+declare -A headers=$9      # Create an associative array
+declare -A rewrites=${10}  # Create an associative array
 paramsTXT=""
 if [ -n "$6" ]; then
    for element in "${!params[@]}"
@@ -12,7 +12,7 @@ if [ -n "$6" ]; then
    done
 fi
 headersTXT=""
-if [ -n "${10}" ]; then
+if [ -n "$9" ]; then
    for element in "${!headers[@]}"
    do
       headersTXT="${headersTXT}
@@ -20,7 +20,7 @@ if [ -n "${10}" ]; then
    done
 fi
 rewritesTXT=""
-if [ -n "${11}" ]; then
+if [ -n "${10}" ]; then
    for element in "${!rewrites[@]}"
    do
       rewritesTXT="${rewritesTXT}
@@ -37,15 +37,6 @@ location /ZendServer {
 else configureZray=""
 fi
 
-if [ "$8" = "true" ]
-then configureXhgui="
-location /xhgui {
-        try_files \$uri \$uri/ /xhgui/index.php?\$args;
-}
-"
-else configureXhgui=""
-fi
-
 block="server {
     listen ${3:-80};
     listen ${4:-443} ssl http2;
@@ -59,16 +50,13 @@ block="server {
     $rewritesTXT
 
     location / {
-        try_files \$uri \$uri/ /index.php\$is_args\$args;
+        if (!-e \$request_filename) {
+            rewrite ^/(.*)\$ /index.php?q=\$1 last;
+        }
         $headersTXT
     }
 
-    location ~ ^/assets/.*\.php\$ {
-        deny all;
-    }
     $configureZray
-
-    $configureXhgui
 
     location = /favicon.ico { access_log off; log_not_found off; }
     location = /robots.txt  { access_log off; log_not_found off; }
@@ -87,7 +75,7 @@ block="server {
         include fastcgi_params;
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         $paramsTXT
-        try_files \$uri =404;
+
         fastcgi_intercept_errors off;
         fastcgi_buffer_size 16k;
         fastcgi_buffers 4 16k;
@@ -96,7 +84,7 @@ block="server {
         fastcgi_read_timeout 300;
     }
 
-    location ~* /\. {
+    location ~ /\.ht {
         deny all;
     }
 
@@ -107,3 +95,4 @@ block="server {
 
 echo "$block" > "/etc/nginx/sites-available/$1"
 ln -fs "/etc/nginx/sites-available/$1" "/etc/nginx/sites-enabled/$1"
+#echo "127.0.0.1 $1" >> /etc/hosts
